@@ -114,6 +114,6 @@ class EntityManager:
             ],
         }
 
-    def get_all_positions(self) -> dict:
+    def get_all_positions(self) -> list:
         """Lấy vị trí tất cả gà để render"""
-        return {c.id: (c.x, c.y) for c in self.chickens if c.alive}
+        return [(c.x, c.y) for c in self.chickens if c.alive]

@@ -56,7 +56,25 @@ quit / exit
 
 📋 Lịch sử cập nhật
 Phiên bản
-Ghi chú
+Ghi chú (nếu có ý tưởng, hãy bổ sung và ghi tên mình vào)
+v1.7.8 (transfer version) by Khoapython-dev:
+* hiển thị:
+- chuyển sang dùng textual lib
+- dân làng sẽ chạy ngẫu nhiên đến 1 ô nào đó, nếu xung quanh là 1 vật phẩm khai thác được, dân làng sẽ khai thác=> texture biến mất trên map)
+- mở rộng map từ 20x18 lên 95x75
+- spam ngẫu nhiên toàn bộ vật phẩm trên map (nhiều hơn cho phép dân làng có nhiều vật phẩm hơn)
+- bổ sung công trình mới: 🛖 nhà kho (công sức chứa toàn bộ vật phẩm là 200) (spam ngẫu nhiên xung quanh nhà chính 3 - 4 block)
+- bổ sung động vật: 🐔 Gà
+gà sẽ spam và đi xung quanh, dân làng nếu bắt gặp có thể giết nó và có thức ăn (+2 ~ +3) (logic ở chicken.lua)
+- bổ sung main menu
+
+* logic:
+- mở rộng mod (dành cho logic của game ở mods/private/..mod) có thể mở rộng logic ở đây nhé thay vì sử dụng mỗi python 
+- sau khi tất cả dân làng đều chết, hiện: lose, quốc gia của bạn đã chết 
+[END] nếu có ý tưởng? tiếp tục điền ở đây:
+
+
+
 v1.4.1 (1.3.7 catch) by Khoapython-dev:
 - Cập nhật README để ghi rõ map 20x18 và lệnh hiện tại.
 - Thêm alias cho chế tạo: `axe`, `pickaxe`, `wood_pickaxe`, `stone_pickaxe`, `wood_axe`, `stone_axe`.

@@ -3,10 +3,12 @@ Country Box - engine chính.
 - Lưu state game vào dictionary.
 - Để bạn dễ nâng cấp bằng comment tiếng Việt.
 - Giữ code ngắn gọn, tách rõ chức năng.
+- v1.7.8: Tích hợp entities (gà) từ entity_manager
 """
 
 from core import commands
 from core import map_render
+from core.entity_manager import EntityManager
 
 
 # tạo villager mặc định
@@ -17,24 +19,26 @@ def new_villager(index):
         "hunger": 50,
         "thirst": 50,
         "status": "idle",
+        "x": 10,  # vị trí toà thị chính
+        "y": 9,
     }
 
 
 def new_game():
-    return {
+    game = {
         "turn": 1,
         "player": {"x": 10, "y": 9},  # vị trí toà thị chính
         "inventory": {
-            "food": 15,  # tăng từ 10 lên 15
-            "water": 15,  # tăng từ 10 lên 15
-            "wood": 30,   # thêm 30 gỗ
-            "stone": 30,  # thêm 30 đá
-            "axe_wood": 0,  # rìu gỗ
-            "axe_stone": 0,  # rìu đá
-            "pickaxe_wood": 0,  # cúp gỗ
-            "pickaxe_stone": 0,  # cúp đá
+            "food": 15,
+            "water": 15,
+            "wood": 30,
+            "stone": 30,
+            "axe_wood": 0,
+            "axe_stone": 0,
+            "pickaxe_wood": 0,
+            "pickaxe_stone": 0,
         },
-        "durability": {  # độ bền của trang bị
+        "durability": {
             "axe_wood": 75,
             "axe_stone": 100,
             "pickaxe_wood": 75,
@@ -42,7 +46,11 @@ def new_game():
         },
         "villagers": [new_villager(i) for i in range(10)],
         "messages": [],
+        "entity_manager": EntityManager(),  # v1.7.8: Quản lý entities (gà)
     }
+    # spawn gà xung quanh map
+    game["entity_manager"].spawn_chickens(count=8, map_width=20, map_height=18)
+    return game
 
 
 # thêm message vào game log
@@ -158,6 +166,19 @@ def turn_tick(game):
             add_message(game, f"{v['name']} đã uống nước.")
             break
 
+    # v1.7.8: cập nhật entities (gà, v.v)
+    result = game["entity_manager"].update(
+        map_width=20,
+        map_height=18,
+        villagers=game["villagers"]
+    )
+    # xử lý gà bị giết - thêm thực phẩm vào kho
+    killed_chickens = result.get("killed_chickens", [])
+    if killed_chickens:
+        total_food = sum(food for x, y, food in killed_chickens)
+        game["inventory"]["food"] += total_food
+        add_message(game, f"🐔 Gà bị giết, sản phẩm: +{total_food} thức ăn từ {len(killed_chickens)} con gà.")
+
 
 # xử lý lệnh người chơi
 def process_command(game, text):
@@ -197,6 +218,16 @@ def show(game):
     game["messages"].clear()
     print("\nBản đồ hiện tại:")
     map_render.render(game["player"]["x"], game["player"]["y"])
+    
+    # v1.7.8: hiển thị thông tin entities
+    chickens = game["entity_manager"].get_all_positions()
+    if chickens:
+        print(f"🐔 Gà trên bản đồ: {len(chickens)} con")
+        for i, (x, y) in enumerate(chickens[:5]):  # hiển thị 5 con đầu tiên
+            print(f"  Gà {i+1}: ({x}, {y})")
+        if len(chickens) > 5:
+            print(f"  ... và {len(chickens) - 5} con khác")
+    
     print("\n" + status_report(game))
 
 

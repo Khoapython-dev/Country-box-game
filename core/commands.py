@@ -42,7 +42,7 @@ def command_help():
     return """
 Các lệnh hiện có:
   hey_village find * [wood|stone|food|water]
-  hey_village make * [axe_wood|axe_stone|pickaxe_wood|pickaxe_stone|food]
+  hey_village make * [smelter|iron|steel|axe_wood|axe_stone|axe_steel|pickaxe_wood|pickaxe_stone|pickaxe_steel|food]
   hey_village are_you_hungry?
   hey_village move dx dy     # dx, dy là số nguyên, tự động khai thác
   help

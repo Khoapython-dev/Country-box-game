@@ -2,6 +2,147 @@
 
 > *Xây làng. Nuôi dân. Sinh tồn.*
 
+Country Box là một game mô phỏng làng xã chạy trên terminal. Bạn điều khiển để dân làng thu thập tài nguyên, chế tạo, xây dựng và giữ cho cả làng sống sót.
+
+---
+
+## 🎮 Cách chơi
+
+Ban đầu bạn có:
+- 👥 **10 dân làng**
+- 🍖 **15 thức ăn** | 💧 **15 nước**
+- 🪵 **30 gỗ** | 🪨 **30 đá**
+- 🏰 **Toà thị chính** tại vị trí trung tâm map
+
+Mỗi lượt bạn nhập lệnh và hệ thống game sẽ tiến 1 lượt:
+- Độ đói và độ khát của dân làng giảm.
+- Dân làng có thể tự động ăn/uống nếu thiếu.
+- Dân làng tự động khai thác khi di chuyển vào ô có tài nguyên.
+
+---
+
+## 💻 Lệnh điều khiển
+
+```bash
+# Yêu cầu dân làng đi thu thập tài nguyên trên ô hiện tại
+hey_village find * [wood|stone|food|water]
+
+# Yêu cầu dân làng chế tạo hoặc xây
+hey_village make * [smelter|iron|steel|axe_wood|axe_stone|axe_steel|pickaxe_wood|pickaxe_stone|pickaxe_steel|food]
+
+# Kiểm tra tình trạng dân làng
+hey_village are_you_hungry?
+
+# Di chuyển và tự động khai thác nếu có tài nguyên
+hey_village move dx dy
+
+# Xem trợ giúp và thoát
+help
+quit / exit
+```
+
+---
+
+## 🌍 Bản đồ và hiển thị
+
+Map hiện tại có kích thước **20x18** với các ký hiệu:
+- `@` = người chơi
+- `🏰` = toà thị chính
+- `🌲` = gỗ
+- `🪨` = đá
+- `⛰️` = núi đá (không thể đi qua)
+- `🏞️` = sông (lấy nước)
+- `#` = tường không qua được
+
+---
+
+## ⭐️ Tính năng hiện tại
+
+- Role system cho dân làng:
+  - `⛏️ Thợ mỏ`
+  - `🪓 Tiều phu`
+  - `🍳 Đầu bếp`
+  - `🛡️ Lính canh`
+- Chu kỳ **ngày/đêm** với hiệu suất khai thác khác nhau.
+- Hệ thống **thời tiết**: `☀️ Nắng`, `🌧️ Mưa`, `❄️ Băng giá`.
+- **Threat system**: `🐺 Sói` hoặc `👹 Bandit` tấn công sau một số lượt.
+- **Tech tree** cơ bản:
+  - Xây `smelter`
+  - Luyện `iron`
+  - Luyện `steel`
+  - Chế tạo `axe_steel` và `pickaxe_steel`
+- Dân làng tự động ăn/uống khi thiếu.
+- Hệ thống **inventory**: food, water, wood, stone, iron, steel.
+
+---
+
+## 🧠 Mục tiêu
+
+Giữ cho dân làng sống sót và phát triển lâu dài bằng cách cân bằng:
+- Ăn uống
+- Tài nguyên
+- Công cụ và cấu trúc
+- Threat và phòng thủ
+
+---
+
+## 🚀 Khởi động game
+
+Chạy từ thư mục gốc:
+
+```bash
+cd /workspaces/Country-box-game
+python3 -m core.game
+```
+
+Hoặc:
+
+```bash
+python3 core/game.py
+```
+
+---
+
+## 📜 Lịch sử cập nhật
+
+v1.8.0 by Khoapython-dev:
+- Thêm hệ thống vai trò dân làng: ⛏️ Thợ mỏ, 🪓 Tiều phu, 🍳 Đầu bếp, 🛡️ Lính canh.
+- Thêm chu kỳ ngày/đêm.
+- Thêm thời tiết: ☀️ Nắng, 🌧️ Mưa, ❄️ Băng giá.
+- Thêm threat system: 🐺 Sói và 👹 Bandit.
+- Thêm tech tree: `smelter`, `iron`, `steel`, `axe_steel`, `pickaxe_steel`.
+
+v1.7.9 by Alex-claudevibe
+
+v1.7.8 (transfer version) by Khoapython-dev:
+- Hiển thị và logic entities gà.
+- Mở rộng map, warehouse, entity system.
+- Hệ thống mod logic.
+
+v1.4.1 (1.3.7 catch) by Khoapython-dev:
+- Alias chế tạo.
+- Tăng tài nguyên khởi đầu.
+- Đề xuất lưu recipe và save game.
+
+v1.4 (1.3.6 Beta) by Khoapython-dev:
+- Bản đồ 20x18.
+- Hệ thống cơ bản: food, water, wood, stone.
+- Trang bị rìu/cúp.
+- Dân làng tự động khai thác và ăn/uống.
+
+---
+
+## 📝 Ghi chú
+
+Nếu bạn muốn mở rộng tiếp, có thể thêm ngay:
+- Event system JSON
+- Population system
+- Diplomacy / multi-village
+- Save/load game
+# 📦 COUNTRY BOX
+
+> *Xây làng. Nuôi dân. Sinh tồn.*
+
 Một tựa game mô phỏng làng xã chạy trên terminal — bạn ra lệnh cho 10 dân làng
 thu thập tài nguyên, chế tạo đồ, và phát triển khu định cư của mình.
 
@@ -25,8 +166,8 @@ chúng sẽ tự đi săn. Hãy giữ cho chúng no và còn sống!
 # Yêu cầu dân làng đi thu thập tài nguyên trên ô hiện tại
 hey_village find * [wood|stone|food|water]
 
-# Yêu cầu dân làng chế tạo
-hey_village make * [axe|axe_wood|axe_stone|pickaxe|pickaxe_wood|pickaxe_stone|food]
+# Yêu cầu dân làng chế tạo hoặc xây
+hey_village make * [smelter|iron|steel|axe_wood|axe_stone|axe_steel|pickaxe_wood|pickaxe_stone|pickaxe_steel|food]
 
 # Kiểm tra tình trạng dân làng
 hey_village are_you_hungry?
@@ -57,6 +198,15 @@ quit / exit
 📋 Lịch sử cập nhật
 Phiên bản
 Ghi chú (nếu có ý tưởng, hãy bổ sung và ghi tên mình vào)
+
+v1.7.9 by Alex-claudevibe
+v1.8.0 by Khoapython-dev:
+- Thêm hệ thống vai trò dân làng: ⛏️ Thợ mỏ, 🪓 Tiều phu, 🍳 Đầu bếp, 🛡️ Lính canh.
+- Thêm chu kỳ ngày/đêm: ban đêm hiệu suất khai thác giảm, game hiển thị giờ trong status.
+- Thêm thời tiết: ☀️ Nắng, 🌧️ Mưa, ❄️ Băng. Mưa tự động thu nước, băng làm dân làng đói nhanh hơn.
+- Thêm threat system: 🐺 Sói và 👹 Bandit sẽ tấn công sau một số lượt, cần có Guard để chặn.
+- Thêm tech tree đơn giản: xây smelter rồi luyện iron và steel, có thêm axe_steel và pickaxe_steel.
+
 v1.7.8 (transfer version) by Khoapython-dev:
 * hiển thị:
 - chuyển sang dùng textual lib

@@ -47,6 +47,37 @@ Làng của bạn bắt đầu ở trung tâm. Khám phá ra ngoài để tìm t
 📋 Lịch sử cập nhật
 Phiên bản
 Ghi chú
+v1.4 (1.3.6 Beta) by Khoapython-dev:
+- Nâng cấp bản đồ lên 20x18
+- các thiết yếu ban đầu như: 
++ nước: 15, thức ăn: 15
++ gỗ: 30
++ đá: 30
+
+- các trang bị sẽ được thêm vào:
++ cúp đá (độ bền) 100
++ cúp gỗ: 75
++ rìu đá:100
++ rìu gỗ: 75
+
+- công thức mới:
+- 2 đá + 1 gỗ -> cúp/rìu đá (độ bền) +25
+- 3 gỗ -> cúp/rìu gỗ (độ bền) +15
+
+- dân làng có thể tự khai thác các tài nguyên này bằng cách di chuyển đến mục tiêu và khai thác 
+- dân làng sẽ tự động lấy thức ăn để ăn hồi thanh đói và uống nước 
+- sử dụng emoji thay vì ASCII:
+- "🏰" toà thị chính (nhà chính cho toàn bộ dân làng)
+- "🌲" cây
+- "🪨" đá
+- "⛰️" núi đá (k thể leo lên hoặc đi qua)
+- "🏞️" sông (lấy nước để uống)
+nhưng"#" là dân làng k thể đi qua
+
+- khắc phục đồ họa bằng cách sử dụng "clear" để làm mới 
+- logic dân làng sẽ được thêm vào sửa chữa riêng ở villager.lua
+END
+
 v1.3
 Phát hành lần đầu 🎉
 v1.1

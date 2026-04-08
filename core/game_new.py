@@ -20,6 +20,7 @@ def new_villager(index):
     }
 
 
+# tạo game mới
 def new_game():
     return {
         "turn": 1,
@@ -50,6 +51,7 @@ def add_message(game, text):
     game["messages"].append(text)
 
 
+# báo cáo trạng thái game
 def status_report(game):
     inventory = game["inventory"]
     durability = game.get("durability", {})
@@ -96,6 +98,7 @@ def command_find(game, item):
         add_message(game, "Dân làng đã lấy được 1 nước.")
 
 
+# lệnh hey_village make *
 def command_make(game, item):
     recipes = {
         "axe_wood": {"wood": 3},  # 3 gỗ -> rìu gỗ
@@ -190,6 +193,7 @@ def show(game):
     print("\n" + status_report(game))
 
 
+# khởi động game
 def main():
     game = new_game()
     add_message(game, "Chào mừng đến Country Box v1.4! Gõ help để bắt đầu.")

@@ -97,6 +97,16 @@ def command_find(game, item):
 
 
 def command_make(game, item):
+    aliases = {
+        "axe": "axe_wood",
+        "wood_axe": "axe_wood",
+        "stone_axe": "axe_stone",
+        "pickaxe": "pickaxe_wood",
+        "wood_pickaxe": "pickaxe_wood",
+        "stone_pickaxe": "pickaxe_stone",
+    }
+    item = aliases.get(item, item)
+
     recipes = {
         "axe_wood": {"wood": 3},  # 3 gỗ -> rìu gỗ
         "axe_stone": {"wood": 1, "stone": 2},  # 2 đá + 1 gỗ -> rìu đá

@@ -28,6 +28,10 @@ Mỗi lượt bạn nhập lệnh và hệ thống game sẽ tiến 1 lượt:
 python run_textual_new.py
 ```
 Giao diện hiện đại với 3 panel: Status, Map+Commands, Messages
+- 🗺️ **Map View**: Viewport 80x20 của map 90x75 với terrain đa dạng (🌲🌿⛰️🪨🏞️)
+- 📊 **Status Panel**: Real-time game status, villagers, resources
+- 💬 **Command Input**: Interactive command input với auto-clear
+- 📝 **Message Log**: Event history và command feedback
 - 🗺️ **Map View**: Viewport 80x20 của map 90x75 với terrain đa dạng
 - 📊 **Status Panel**: Real-time game status, villagers, resources
 - 💬 **Command Input**: Interactive command input với auto-clear

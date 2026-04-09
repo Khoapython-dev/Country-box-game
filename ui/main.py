@@ -5,8 +5,8 @@ Chuyển từ CLI thuần sang TUI hiện đại với Textual framework
 
 try:
     from textual.app import App, ComposeResult
-    from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import Header, Footer, Static, Button, Input, Label
+    from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
+    from textual.widgets import Header, Footer, Static, Button, Input, TextArea
     from textual import events
     TEXTUAL_AVAILABLE = True
 except ImportError:
@@ -18,11 +18,11 @@ from core import game as game_engine
 
 if TEXTUAL_AVAILABLE:
 
-    class MapView(Static):
+    class MapView(TextArea):
         """Hiển thị map game với viewport"""
 
         def __init__(self, game_state):
-            super().__init__()
+            super().__init__(read_only=True, show_line_numbers=False)
             self.game_state = game_state
             self.viewport_width = 80
             self.viewport_height = 20
@@ -47,6 +47,10 @@ if TEXTUAL_AVAILABLE:
             header = f"Map: {map_info['dimensions']} | Pos: ({player_x}, {player_y}) | Town Hall: {map_info['town_hall']}\n"
 
             return header + map_display
+
+        def on_mount(self):
+            """Set up when mounted"""
+            self.load_text(self.render())
 
     class StatusPanel(Static):
         """Panel hiển thị status game"""
@@ -139,7 +143,7 @@ if TEXTUAL_AVAILABLE:
         }
 
         #command-input {
-            height: 1;
+            height: 30%;
             border: solid #444444;
             background: #1a1a1a;
             color: #00ff00;
@@ -172,6 +176,9 @@ if TEXTUAL_AVAILABLE:
         def __init__(self):
             super().__init__()
             self.game_state = None
+            self.map_view = None
+            self.status_panel = None
+            self.message_log = None
 
         def compose(self) -> ComposeResult:
             """Tạo layout UI"""
@@ -181,16 +188,16 @@ if TEXTUAL_AVAILABLE:
                     # Left panel - Status
                     with Vertical(id="left-panel"):
                         yield Static("📊 Game Status", id="status-title")
-                        status_panel = StatusPanel(self.game_state)
-                        status_panel.id = "status-panel"
-                        yield status_panel
+                        self.status_panel = StatusPanel(self.game_state)
+                        self.status_panel.id = "status-panel"
+                        yield self.status_panel
 
                     # Center panel - Map & Commands
                     with Vertical(id="center-panel"):
                         yield Static("🗺️ World Map", id="map-title")
-                        map_view = MapView(self.game_state)
-                        map_view.id = "map-view"
-                        yield map_view
+                        self.map_view = MapView(self.game_state)
+                        self.map_view.id = "map-view"
+                        yield self.map_view
                         yield Static("💬 Commands", id="command-title")
                         cmd_input = CommandInput()
                         cmd_input.id = "command-input"
@@ -199,9 +206,9 @@ if TEXTUAL_AVAILABLE:
                     # Right panel - Messages
                     with Vertical(id="right-panel"):
                         yield Static("📝 Messages", id="message-title")
-                        msg_log = MessageLog(self.game_state)
-                        msg_log.id = "message-log"
-                        yield msg_log
+                        self.message_log = MessageLog(self.game_state)
+                        self.message_log.id = "message-log"
+                        yield self.message_log
 
             yield Footer()
 
@@ -216,8 +223,17 @@ if TEXTUAL_AVAILABLE:
 
         def update_ui(self):
             """Update tất cả UI components"""
-            # Refresh all components that depend on game_state
-            self.refresh()
+            # Update map view
+            if hasattr(self, 'map_view') and self.map_view:
+                self.map_view.load_text(self.map_view.render())
+
+            # Update status panel
+            if hasattr(self, 'status_panel') and self.status_panel:
+                self.status_panel.refresh()
+
+            # Update message log
+            if hasattr(self, 'message_log') and self.message_log:
+                self.message_log.refresh()
 
         def process_command(self, command: str):
             """Xử lý command từ user"""

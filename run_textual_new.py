@@ -14,7 +14,7 @@ def main():
     """Main entry point với error handling"""
     try:
         # Import và chạy Textual UI
-        from ui.main_new import main as textual_main
+        from ui.main import main as textual_main
         textual_main()
 
     except ImportError as e:

@@ -6,7 +6,7 @@ Chuyển từ CLI thuần sang TUI hiện đại với Textual framework
 try:
     from textual.app import App, ComposeResult
     from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import Header, Footer, Static, Button, TextArea, Label
+    from textual.widgets import Header, Footer, Static, Button, Input, Label
     from textual import events
     TEXTUAL_AVAILABLE = True
 except ImportError:
@@ -78,27 +78,22 @@ if TEXTUAL_AVAILABLE:
             messages = self.game_state["messages"][-10:]
             return "\n".join(messages)
 
-    class CommandInput(TextArea):
+    class CommandInput(Input):
         """Input cho commands"""
 
         def __init__(self):
             super().__init__(placeholder="Enter command (type 'help' for commands)...")
-            self.last_value = ""
 
-        def on_text_area_changed(self, event):
-            """Xử lý khi text thay đổi - kiểm tra Enter"""
-            current_value = self.value
-            if '\n' in current_value and current_value != self.last_value:
-                # User pressed Enter - extract command
-                command = current_value.strip()
-                if command:
-                    # Gửi command đến app để xử lý
-                    self.app.process_command(command)
-                    # Clear input
-                    self.value = ""
-                    self.last_value = ""
-                else:
-                    self.last_value = current_value
+        def on_mount(self):
+            """Khi widget được mounted"""
+            pass
+
+        async def action_submit(self) -> None:
+            """Gọi khi user press Enter"""
+            command = self.value.strip()
+            if command:
+                self.app.process_command(command)
+                self.value = ""  # Clear input
 
     class CountryBoxApp(App):
         """Main Textual App cho Country Box"""
@@ -144,9 +139,10 @@ if TEXTUAL_AVAILABLE:
         }
 
         #command-input {
-            height: 30%;
+            height: 1;
             border: solid #444444;
             background: #1a1a1a;
+            color: #00ff00;
         }
 
         #status-panel {
@@ -185,19 +181,27 @@ if TEXTUAL_AVAILABLE:
                     # Left panel - Status
                     with Vertical(id="left-panel"):
                         yield Static("📊 Game Status", id="status-title")
-                        yield StatusPanel(self.game_state).set_id("status-panel")
+                        status_panel = StatusPanel(self.game_state)
+                        status_panel.id = "status-panel"
+                        yield status_panel
 
                     # Center panel - Map & Commands
                     with Vertical(id="center-panel"):
                         yield Static("🗺️ World Map", id="map-title")
-                        yield MapView(self.game_state).set_id("map-view")
+                        map_view = MapView(self.game_state)
+                        map_view.id = "map-view"
+                        yield map_view
                         yield Static("💬 Commands", id="command-title")
-                        yield CommandInput().set_id("command-input")
+                        cmd_input = CommandInput()
+                        cmd_input.id = "command-input"
+                        yield cmd_input
 
                     # Right panel - Messages
                     with Vertical(id="right-panel"):
                         yield Static("📝 Messages", id="message-title")
-                        yield MessageLog(self.game_state).set_id("message-log")
+                        msg_log = MessageLog(self.game_state)
+                        msg_log.id = "message-log"
+                        yield msg_log
 
             yield Footer()
 

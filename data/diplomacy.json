@@ -1,0 +1,111 @@
+{
+  "villages": [
+    {
+      "id": "main_village",
+      "name": "Làng Chính",
+      "position": {"x": 10, "y": 9},
+      "population": 10,
+      "resources": {"food": 15, "wood": 30, "stone": 30},
+      "structures": ["town_hall"],
+      "relations": {}
+    },
+    {
+      "id": "north_village",
+      "name": "Làng Bắc",
+      "position": {"x": 10, "y": 2},
+      "population": 8,
+      "resources": {"food": 12, "wood": 25, "stone": 20},
+      "structures": ["town_hall"],
+      "relations": {"main_village": "neutral"}
+    },
+    {
+      "id": "south_village",
+      "name": "Làng Nam",
+      "position": {"x": 10, "y": 16},
+      "population": 6,
+      "resources": {"food": 10, "wood": 20, "stone": 15},
+      "structures": ["town_hall"],
+      "relations": {"main_village": "neutral"}
+    },
+    {
+      "id": "east_village",
+      "name": "Làng Đông",
+      "position": {"x": 17, "y": 9},
+      "population": 7,
+      "resources": {"food": 11, "wood": 18, "stone": 22},
+      "structures": ["town_hall"],
+      "relations": {"main_village": "neutral"}
+    }
+  ],
+  "diplomacy_events": [
+    {
+      "id": "trade_proposal",
+      "name": "Đề nghị thương mại",
+      "description": "Làng láng giềng đề nghị trao đổi tài nguyên",
+      "probability": 0.20,
+      "conditions": {
+        "relation": "neutral",
+        "min_turns": 20
+      },
+      "effects": {
+        "trade_options": [
+          {"give": {"wood": 10}, "receive": {"stone": 8}, "relation_change": 10},
+          {"give": {"stone": 8}, "receive": {"food": 6}, "relation_change": 10}
+        ]
+      }
+    },
+    {
+      "id": "alliance_offer",
+      "name": "Đề nghị liên minh",
+      "description": "Làng láng giềng muốn thành lập liên minh",
+      "probability": 0.10,
+      "conditions": {
+        "relation": "friendly",
+        "min_turns": 40,
+        "structures": ["temple"]
+      },
+      "effects": {
+        "alliance_benefits": {
+          "shared_defense": true,
+          "trade_bonus": 0.15,
+          "relation_change": 50
+        }
+      }
+    },
+    {
+      "id": "border_dispute",
+      "name": "Tranh chấp biên giới",
+      "description": "Xảy ra tranh chấp lãnh thổ với làng láng giềng",
+      "probability": 0.15,
+      "conditions": {
+        "relation": "neutral",
+        "min_turns": 15
+      },
+      "effects": {
+        "conflict_options": [
+          {"action": "negotiate", "relation_change": 5, "resource_cost": {"wood": 5}},
+          {"action": "concede", "relation_change": -10, "resource_loss": {"stone": 3}},
+          {"action": "fight", "relation_change": -30, "damage_risk": {"min": 1, "max": 3}}
+        ]
+      }
+    },
+    {
+      "id": "mysterious_gift",
+      "name": "Quà tặng bí ẩn",
+      "description": "Nhận được quà tặng từ làng láng giềng",
+      "probability": 0.08,
+      "conditions": {
+        "relation": "friendly",
+        "min_turns": 25
+      },
+      "effects": {
+        "random_gift": {
+          "food": {"min": 3, "max": 8},
+          "wood": {"min": 5, "max": 12},
+          "stone": {"min": 4, "max": 10}
+        },
+        "relation_change": 15
+      }
+    }
+  ]
+}

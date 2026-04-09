@@ -3,14 +3,16 @@ Country Box - engine chính.
 - Lưu state game vào dictionary.
 - Để bạn dễ nâng cấp bằng comment tiếng Việt.
 - Giữ code ngắn gọn, tách rõ chức năng.
-- v1.7.8: Tích hợp entities (gà) từ entity_manager
+- v2.0.0: Textual UI + Map 90x75
 """
 
 import random
+import json
+import os
 
 from core import commands
 from core import map_render
-from core.entity_manager import EntityManager
+# from core.entity_manager import EntityManager  # tạm thời comment vì đã xóa file
 
 ROLE_LABELS = {
     "miner": "⛏️ Thợ mỏ",
@@ -37,8 +39,8 @@ def new_villager(index):
         "hunger": 50,
         "thirst": 50,
         "status": "idle",
-        "x": 10,  # vị trí toà thị chính
-        "y": 9,
+        "x": 45,  # vị trí toà thị chính (center của map 90x75)
+        "y": 37,
     }
 
 
@@ -49,7 +51,8 @@ def new_game():
         "weather": "sunny",
         "weather_duration": 5,
         "next_threat_turn": 12,
-        "player": {"x": 10, "y": 9},  # vị trí toà thị chính
+        "population_growth_turns": 0,
+        "player": {"x": 45, "y": 37},  # vị trí toà thị chính (center)
         "inventory": {
             "food": 15,
             "water": 15,
@@ -75,10 +78,10 @@ def new_game():
         "villagers": [new_villager(i) for i in range(10)],
         "structures": {"smelter": False},
         "messages": [],
-        "entity_manager": EntityManager(),  # v1.7.8: Quản lý entities (gà)
+        # "entity_manager": EntityManager(),  # tạm thời comment vì đã xóa file
     }
     # spawn gà xung quanh map
-    game["entity_manager"].spawn_chickens(count=8, map_width=20, map_height=18)
+    # game["entity_manager"].spawn_chickens(count=8, map_width=20, map_height=18)
     return game
 
 
@@ -122,6 +125,134 @@ def add_message(game, text):
     game["messages"].append(text)
 
 
+# Event System
+def load_events():
+    """Load events từ file JSON"""
+    try:
+        events_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "events.json")
+        with open(events_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("events", [])
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def check_event_conditions(game, event):
+    """Kiểm tra điều kiện để trigger event"""
+    conditions = event.get("conditions", {})
+
+    # Kiểm tra số turn tối thiểu
+    if "min_turns" in conditions and game["turn"] < conditions["min_turns"]:
+        return False
+
+    # Kiểm tra số turn tối đa
+    if "max_turns" in conditions and game["turn"] > conditions["max_turns"]:
+        return False
+
+    # Kiểm tra thời tiết
+    if "weather" in conditions and game["weather"] not in conditions["weather"]:
+        return False
+
+    # Kiểm tra thời gian trong ngày
+    if "time_of_day" in conditions and get_time_of_day(game["hour"]) != conditions["time_of_day"]:
+        return False
+
+    # Kiểm tra số villagers tối thiểu
+    if "min_villagers" in conditions and len(game["villagers"]) < conditions["min_villagers"]:
+        return False
+
+    # Kiểm tra số guard tối đa
+    if "max_guards" in conditions and get_guard_count(game) > conditions["max_guards"]:
+        return False
+
+    # Kiểm tra structures
+    if "structures" in conditions:
+        for struct in conditions["structures"]:
+            if not game["structures"].get(struct, False):
+                return False
+
+    # Kiểm tra food tối đa
+    if "max_food" in conditions and game["inventory"]["food"] > conditions["max_food"]:
+        return False
+
+    return True
+
+
+def trigger_event(game, event):
+    """Thực hiện hiệu ứng của event"""
+    effects = event.get("effects", {})
+    event_name = event["name"]
+
+    # Thêm message về event
+    add_message(game, f"📢 {event_name}: {event['description']}")
+
+    # Resource gains
+    if "resources" in effects:
+        for resource, amount_range in effects["resources"].items():
+            amount = random.randint(amount_range["min"], amount_range["max"])
+            game["inventory"][resource] += amount
+            add_message(game, f"  ➕ Nhận {amount} {resource}")
+
+    # Resource losses
+    if "resource_loss" in effects:
+        for resource, amount_range in effects["resource_loss"].items():
+            amount = random.randint(amount_range["min"], amount_range["max"])
+            game["inventory"][resource] = max(0, game["inventory"][resource] - amount)
+            add_message(game, f"  ➖ Mất {amount} {resource}")
+
+    # Threat effects
+    if "threat" in effects:
+        threat = effects["threat"]
+        if "damage" in threat:
+            damage = random.randint(threat["damage"]["min"], threat["damage"]["max"])
+            guards = get_guard_count(game)
+            if guards > 0:
+                damage = int(damage * threat.get("guard_reduction", 1.0))
+            # Giảm villagers (đơn giản hóa)
+            villagers_lost = min(damage, len(game["villagers"]))
+            game["villagers"] = game["villagers"][:len(game["villagers"])-villagers_lost]
+            add_message(game, f"  💀 Mất {villagers_lost} villagers do threat")
+
+    # Trade offers
+    if "trade_offers" in effects:
+        game["current_trade_offers"] = effects["trade_offers"]
+        add_message(game, f"  🛒 Thương nhân mang theo hàng hóa đặc biệt!")
+
+    # Tech unlocks
+    if "unlock_tech" in effects:
+        for tech in effects["unlock_tech"]:
+            if tech not in game.get("unlocked_tech", []):
+                game.setdefault("unlocked_tech", []).append(tech)
+                add_message(game, f"  🔓 Mở khóa công nghệ: {tech}")
+
+    # Morale boost
+    if "morale_boost" in effects:
+        game["morale"] = game.get("morale", 0) + effects["morale_boost"]
+        add_message(game, f"  😊 Tăng morale +{effects['morale_boost']}")
+
+    # Hunger penalty
+    if "hunger_penalty" in effects:
+        game["hunger_penalty"] = game.get("hunger_penalty", 0) + effects["hunger_penalty"]
+        add_message(game, f"  😞 Tăng hunger penalty +{effects['hunger_penalty']}")
+
+
+def process_events(game):
+    """Xử lý events ngẫu nhiên mỗi turn"""
+    if not hasattr(process_events, "events_cache"):
+        process_events.events_cache = load_events()
+
+    events = process_events.events_cache
+    if not events:
+        return
+
+    # Roll cho mỗi event
+    for event in events:
+        if random.random() < event["probability"]:
+            if check_event_conditions(game, event):
+                trigger_event(game, event)
+                break  # Chỉ trigger 1 event mỗi turn
+
+
 def status_report(game):
     inventory = game["inventory"]
     durability = game.get("durability", {})
@@ -132,11 +263,20 @@ def status_report(game):
         f"Axe Wood: {inventory['axe_wood']} (dur: {durability.get('axe_wood', 0)}) | Axe Stone: {inventory['axe_stone']} (dur: {durability.get('axe_stone', 0)}) | Axe Steel: {inventory['axe_steel']} (dur: {durability.get('axe_steel', 0)})",
         f"Pickaxe Wood: {inventory['pickaxe_wood']} (dur: {durability.get('pickaxe_wood', 0)}) | Pickaxe Stone: {inventory['pickaxe_stone']} (dur: {durability.get('pickaxe_stone', 0)}) | Pickaxe Steel: {inventory['pickaxe_steel']} (dur: {durability.get('pickaxe_steel', 0)})",
         f"Smelter: {'✅ Đã xây' if game['structures'].get('smelter') else '❌ Chưa xây'}",
-        "Villagers:",
+        f"Villagers: {len(game['villagers'])} người (Growth: {game['population_growth_turns']}/10)",
+        "",
     ]
     for v in game["villagers"]:
         role_label = ROLE_LABELS.get(v["role"], v["role"])
         report.append(f"  - {v['name']} ({role_label}): hunger={v['hunger']} thirst={v['thirst']} status={v['status']}")
+
+    # Hiển thị trade offers nếu có
+    if game.get("current_trade_offers"):
+        report.append("")
+        report.append("🛒 Thương nhân đang có hàng:")
+        for offer in game["current_trade_offers"]:
+            report.append(f"  - {offer['amount']} {offer['item']} với giá {offer['cost']} wood")
+
     return "\n".join(report)
 
 
@@ -299,18 +439,76 @@ def turn_tick(game):
                 add_message(game, f"{threat_name} làm mất {loss_amount} {loss_item} dù có lính canh.")
         game["next_threat_turn"] = game["turn"] + random.randint(10, 15)
 
+    # Population system: sinh sản và chết đói
+    if game["inventory"]["food"] >= 15 and game["structures"].get("smelter", False):
+        game["population_growth_turns"] += 1
+        if game["population_growth_turns"] >= 10:  # sau 10 lượt đủ điều kiện
+            new_villager_index = len(game["villagers"]) + 1
+            new_v = new_villager(new_villager_index - 1)
+            game["villagers"].append(new_v)
+            game["inventory"]["food"] -= 5  # tiêu tốn thức ăn để sinh sản
+            game["population_growth_turns"] = 0
+            add_message(game, f"👶 Dân làng mới sinh ra: {new_v['name']} ({ROLE_LABELS.get(new_v['role'], new_v['role'])}).")
+    else:
+        game["population_growth_turns"] = 0
+
+    # Kiểm tra chết đói: nếu food < 0 và dân làng > 1 thì có thể chết
+    if game["inventory"]["food"] < 0 and len(game["villagers"]) > 1:
+        if random.random() < 0.3:  # 30% chance chết đói mỗi lượt
+            victim = random.choice(game["villagers"])
+            game["villagers"].remove(victim)
+            add_message(game, f"💀 {victim['name']} đã chết đói do thiếu thức ăn.")
+
     # v1.7.8: cập nhật entities (gà, v.v)
-    result = game["entity_manager"].update(
-        map_width=20,
-        map_height=18,
-        villagers=game["villagers"]
-    )
-    # xử lý gà bị giết - thêm thực phẩm vào kho
-    killed_chickens = result.get("killed_chickens", [])
-    if killed_chickens:
-        total_food = sum(food for x, y, food in killed_chickens)
-        game["inventory"]["food"] += total_food
-        add_message(game, f"🐔 Gà bị giết, sản phẩm: +{total_food} thức ăn từ {len(killed_chickens)} con gà.")
+    # result = game["entity_manager"].update(
+    #     map_width=20,
+    #     map_height=18,
+    #     villagers=game["villagers"]
+    # )
+    # # xử lý gà bị giết - thêm thực phẩm vào kho
+    # killed_chickens = result.get("killed_chickens", [])
+    # if killed_chickens:
+    #     total_food = sum(food for x, y, food in killed_chickens)
+    #     game["inventory"]["food"] += total_food
+    #     add_message(game, f"🐔 Gà bị giết, sản phẩm: +{total_food} thức ăn từ {len(killed_chickens)} con gà.")
+
+    # Event System: xử lý events ngẫu nhiên
+    process_events(game)
+
+
+def command_trade(game, item, amount):
+    """Trade với thương nhân"""
+    if not game.get("current_trade_offers"):
+        add_message(game, "Không có thương nhân nào đang ở làng.")
+        return
+
+    # Tìm offer phù hợp
+    offer = None
+    for o in game["current_trade_offers"]:
+        if o["item"] == item and o["amount"] == amount:
+            offer = o
+            break
+
+    if not offer:
+        add_message(game, f"Thương nhân không bán {amount} {item}. Kiểm tra lại hàng hóa có sẵn.")
+        return
+
+    # Kiểm tra có đủ wood để mua không
+    cost = offer["cost"]
+    if game["inventory"]["wood"] < cost:
+        add_message(game, f"Cần {cost} wood để mua, nhưng chỉ có {game['inventory']['wood']} wood.")
+        return
+
+    # Thực hiện trade
+    game["inventory"]["wood"] -= cost
+    game["inventory"][item] += amount
+    add_message(game, f"🛒 Mua thành công {amount} {item} với giá {cost} wood.")
+
+    # Xóa offer đã mua (mỗi offer chỉ mua được 1 lần)
+    game["current_trade_offers"].remove(offer)
+    if not game["current_trade_offers"]:
+        game.pop("current_trade_offers", None)
+        add_message(game, "Thương nhân đã bán hết hàng và rời đi.")
 
 
 # xử lý lệnh người chơi
@@ -344,6 +542,16 @@ def process_command(game, text):
                         add_message(game, f"Dân làng tự động khai thác được 1 {harvested}.")
         else:
             add_message(game, "Không thể đi tới ô đó.")
+    elif action == "trade":
+        if len(args) >= 2:
+            item = args[0]
+            try:
+                amount = int(args[1])
+                command_trade(game, item, amount)
+            except ValueError:
+                add_message(game, "Số lượng phải là số nguyên.")
+        else:
+            add_message(game, "Cú pháp: hey_village trade * item amount")
     elif action == "help":
         add_message(game, commands.command_help())
     else:
@@ -360,13 +568,13 @@ def show(game):
     map_render.render(game["player"]["x"], game["player"]["y"])
     
     # v1.7.8: hiển thị thông tin entities
-    chickens = game["entity_manager"].get_all_positions()
-    if chickens:
-        print(f"🐔 Gà trên bản đồ: {len(chickens)} con")
-        for i, (x, y) in enumerate(chickens[:5]):  # hiển thị 5 con đầu tiên
-            print(f"  Gà {i+1}: ({x}, {y})")
-        if len(chickens) > 5:
-            print(f"  ... và {len(chickens) - 5} con khác")
+    # chickens = game["entity_manager"].get_all_positions()
+    # if chickens:
+    #     print(f"🐔 Gà trên bản đồ: {len(chickens)} con")
+    #     for i, (x, y) in enumerate(chickens[:5]):  # hiển thị 5 con đầu tiên
+    #         print(f"  Gà {i+1}: ({x}, {y})")
+    #     if len(chickens) > 5:
+    #         print(f"  ... và {len(chickens) - 5} con khác")
     
     print("\n" + status_report(game))
 

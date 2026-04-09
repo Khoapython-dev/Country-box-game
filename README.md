@@ -1,8 +1,8 @@
-# 📦 COUNTRY BOX
+# 📦 COUNTRY BOX v2.0
 
-> *Xây làng. Nuôi dân. Sinh tồn.*
+> *Xây làng. Nuôi dân. Sinh tồn. - Textual UI Edition*
 
-Country Box là một game mô phỏng làng xã chạy trên terminal. Bạn điều khiển để dân làng thu thập tài nguyên, chế tạo, xây dựng và giữ cho cả làng sống sót.
+Country Box là một game mô phỏng làng xã chạy trên terminal với giao diện Textual hiện đại. Bạn điều khiển để dân làng thu thập tài nguyên, chế tạo, xây dựng và giữ cho cả làng sống sót.
 
 ---
 
@@ -21,7 +21,39 @@ Mỗi lượt bạn nhập lệnh và hệ thống game sẽ tiến 1 lượt:
 
 ---
 
-## 💻 Lệnh điều khiển
+## 💻 Chạy game
+
+### Textual UI (Khuyến nghị - v2.0)
+```bash
+python run_textual_new.py
+```
+Giao diện hiện đại với 3 panel: Status, Map+Commands, Messages
+- 🗺️ **Map View**: Viewport 80x20 của map 90x75 với terrain đa dạng
+- 📊 **Status Panel**: Real-time game status, villagers, resources
+- 💬 **Command Input**: Interactive command input với auto-clear
+- 📝 **Message Log**: Event history và notifications
+
+### CLI Fallback
+```bash
+python run_cli.py
+```
+Giao diện dòng lệnh thuần khi Textual không khả dụng
+
+### Test Suite
+```bash
+python test_textual_ui.py
+```
+Chạy test suite để kiểm tra tất cả components
+
+### Demo (Non-interactive)
+```bash
+python demo_textual.py
+```
+Xem demo UI components mà không cần tương tác
+
+---
+
+## 🎛️ Lệnh điều khiển
 
 ```bash
 # Yêu cầu dân làng đi thu thập tài nguyên trên ô hiện tại
@@ -29,6 +61,9 @@ hey_village find * [wood|stone|food|water]
 
 # Yêu cầu dân làng chế tạo hoặc xây
 hey_village make * [smelter|iron|steel|axe_wood|axe_stone|axe_steel|pickaxe_wood|pickaxe_stone|pickaxe_steel|food]
+
+# Mua hàng từ thương nhân (khi có sự kiện thương nhân)
+hey_village trade * item amount
 
 # Kiểm tra tình trạng dân làng
 hey_village are_you_hungry?
@@ -45,14 +80,22 @@ quit / exit
 
 ## 🌍 Bản đồ và hiển thị
 
-Map hiện tại có kích thước **20x18** với các ký hiệu:
+Map hiện tại có kích thước **90x75** với viewport rendering trong Textual UI:
 - `@` = người chơi
-- `🏰` = toà thị chính
-- `🌲` = gỗ
-- `🪨` = đá
-- `⛰️` = núi đá (không thể đi qua)
-- `🏞️` = sông (lấy nước)
-- `#` = tường không qua được
+- `🏰` = toà thị chính (ở center)
+- `🌲` = gỗ (clusters ngẫu nhiên)
+- `🪨` = đá (clusters ngẫu nhiên)
+- `⛰️` = núi (không thể đi qua)
+- `🏞️` = sông (cung cấp nước)
+- `#` = tường biên (không qua được)
+- `.` = đất trống
+
+**Textual UI Features:**
+- Viewport 80x20 hiển thị khu vực xung quanh player
+- Real-time status panel
+- Message log với event history
+- Command input với syntax highlighting
+- Keyboard shortcuts (F1: help, Ctrl+C: exit)
 
 ---
 
@@ -71,6 +114,8 @@ Map hiện tại có kích thước **20x18** với các ký hiệu:
   - Luyện `iron`
   - Luyện `steel`
   - Chế tạo `axe_steel` và `pickaxe_steel`
+- **Population system**: Sinh sản khi đủ thức ăn + smelter, chết đói khi thiếu ăn.
+- **Event System**: Sự kiện ngẫu nhiên như thương nhân, mùa màng bội thu, thảm họa.
 - Dân làng tự động ăn/uống khi thiếu.
 - Hệ thống **inventory**: food, water, wood, stone, iron, steel.
 
@@ -86,26 +131,40 @@ Giữ cho dân làng sống sót và phát triển lâu dài bằng cách cân b
 
 ---
 
-## 🚀 Khởi động game
+## �️ Yêu cầu hệ thống
 
-Chạy từ thư mục gốc:
+- **Python**: 3.8+
+- **Dependencies**:
+  - `textual` (khuyến nghị cho UI hiện đại)
+  - `rich` (tự động cài với textual)
+- **Terminal**: Hỗ trợ Unicode và màu sắc
 
+### Cài đặt dependencies
 ```bash
-cd /workspaces/Country-box-game
-python3 -m core.game
-```
-
-Hoặc:
-
-```bash
-python3 core/game.py
+pip install textual
+# hoặc trong dev container:
+pip install --break-system-packages textual
 ```
 
 ---
 
 ## 📜 Lịch sử cập nhật
 
+v2.0.0 by Khoapython-dev:
+- **Textual UI Migration**: Chuyển từ CLI thuần sang Textual framework hiện đại
+- **Map Expansion**: Từ 20x18 lên 90x75 với procedural generation
+- **Viewport System**: Hiển thị map hiệu quả với viewport rendering
+- **Real-time UI**: Status panel, message log, command input real-time
+- **Performance**: Tối ưu rendering cho map lớn
+- **Fallback System**: CLI fallback khi Textual không khả dụng
+
+v1.9.0 by Khoapython-dev:
+- Thêm Event System: Sự kiện ngẫu nhiên từ file JSON (thương nhân, mùa màng bội thu, thảm họa).
+- Cải thiện Population System: điều kiện sinh sản dễ hơn (food >=15 thay vì 20).
+
 v1.8.0 by Khoapython-dev:
+- Thêm Population System: sinh sản khi đủ thức ăn + smelter, chết đói khi thiếu ăn.
+- Hiển thị số dân làng và tiến trình sinh sản trong status.
 - Thêm hệ thống vai trò dân làng: ⛏️ Thợ mỏ, 🪓 Tiều phu, 🍳 Đầu bếp, 🛡️ Lính canh.
 - Thêm chu kỳ ngày/đêm.
 - Thêm thời tiết: ☀️ Nắng, 🌧️ Mưa, ❄️ Băng giá.

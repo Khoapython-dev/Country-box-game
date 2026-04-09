@@ -1,0 +1,136 @@
+{
+  "events": [
+    {
+      "id": "merchant_visit",
+      "name": "Thương nhân đến thăm",
+      "description": "Một thương nhân đến làng bán hàng với giá rẻ",
+      "probability": 0.15,
+      "conditions": {
+        "min_turns": 5,
+        "max_turns": 50
+      },
+      "effects": {
+        "trade_offers": [
+          {"item": "wood", "amount": 5, "cost": 2},
+          {"item": "stone", "amount": 3, "cost": 3},
+          {"item": "iron", "amount": 2, "cost": 5}
+        ]
+      }
+    },
+    {
+      "id": "good_harvest",
+      "name": "Mùa màng bội thu",
+      "description": "Thời tiết thuận lợi mang lại nhiều lương thực",
+      "probability": 0.10,
+      "conditions": {
+        "weather": ["sunny"],
+        "min_turns": 3
+      },
+      "effects": {
+        "resources": {
+          "food": {"min": 3, "max": 8}
+        }
+      }
+    },
+    {
+      "id": "resource_discovery",
+      "name": "Khám phá tài nguyên",
+      "description": "Người dân phát hiện một mỏ tài nguyên mới",
+      "probability": 0.08,
+      "conditions": {
+        "min_villagers": 8,
+        "min_turns": 10
+      },
+      "effects": {
+        "resources": {
+          "wood": {"min": 5, "max": 15},
+          "stone": {"min": 3, "max": 10}
+        }
+      }
+    },
+    {
+      "id": "wolf_attack",
+      "name": "Đàn sói tấn công",
+      "description": "Một đàn sói tấn công làng vào ban đêm",
+      "probability": 0.12,
+      "conditions": {
+        "time_of_day": "night",
+        "min_turns": 8
+      },
+      "effects": {
+        "threat": {
+          "damage": {"min": 1, "max": 3},
+          "guard_reduction": 0.5
+        }
+      }
+    },
+    {
+      "id": "bandit_raid",
+      "name": "Cướp biển cướp bóc",
+      "description": "Một nhóm cướp biển tấn công làng",
+      "probability": 0.08,
+      "conditions": {
+        "min_turns": 15,
+        "max_guards": 2
+      },
+      "effects": {
+        "threat": {
+          "damage": {"min": 2, "max": 5},
+          "resource_loss": {
+            "food": {"min": 1, "max": 3},
+            "wood": {"min": 1, "max": 4}
+          }
+        }
+      }
+    },
+    {
+      "id": "blessing",
+      "name": "Phước lành từ thần linh",
+      "description": "Một dấu hiệu tốt lành xuất hiện",
+      "probability": 0.05,
+      "conditions": {
+        "min_turns": 20,
+        "structures": ["temple"]
+      },
+      "effects": {
+        "resources": {
+          "food": {"min": 5, "max": 10}
+        },
+        "morale_boost": 2
+      }
+    },
+    {
+      "id": "famine",
+      "name": "Nạn đói kém",
+      "description": "Thời tiết khô hạn gây ra nạn đói",
+      "probability": 0.06,
+      "conditions": {
+        "weather": ["sunny"],
+        "min_turns": 12,
+        "max_food": 20
+      },
+      "effects": {
+        "resource_loss": {
+          "food": {"min": 3, "max": 8}
+        },
+        "hunger_penalty": 1
+      }
+    },
+    {
+      "id": "mysterious_stranger",
+      "name": "Người lạ bí ẩn",
+      "description": "Một người lạ đến làng mang theo công nghệ mới",
+      "probability": 0.04,
+      "conditions": {
+        "min_turns": 25,
+        "min_villagers": 12
+      },
+      "effects": {
+        "unlock_tech": ["advanced_tools"],
+        "resources": {
+          "iron": {"min": 2, "max": 5}
+        }
+      }
+    }
+  ]
+}
